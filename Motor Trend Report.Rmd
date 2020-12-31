@@ -17,17 +17,17 @@ opts_chunk$set(cache =T,
 ```
 ## 1.0    Executive Summary  
 In this report, the data set `mtcars` extracted from the 1974 *Motor Trend* US magazine, was used to explore the relationship between a set of predictor variables and the response variable, fuel consumption (MPG).  
-The data set comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models). [*Link*](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html)  
+The data set comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models). [*Code Book Link*](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html)  
 Statistical Inference & Linear Regression methods were used to answer the following two questions:  
 1.    “Is an automatic or manual transmission better for MPG?”  
 2.    "Quantify the MPG difference between automatic and manual transmissions"  
 
-The results of the analysis show that Manuals are significantly better for MPG.  
-However, MPG is negatively correlated to vehicle weight and positively correlated to 1/4 mile times regardless of transmission type.
-The model that explains the relationship between these variables is:  
+The results of the analysis show that Manuals are significantly better for MPG. On the average Manuals are approx. 7.2 mpg better than Automatics in the data set.  
+However, fuel consumption (mpg) is negatively correlated to vehicle weight and positively correlated to 1/4 mile times regardless of transmission type.
+The model that quantifies the relationship between these key variables is:  
     **MPG = 9.6 - 3.9(wt) + 1.2(qsec) + 3 (am: 0 for autos & 1 for manual)**  
-On the average Manuals are approx. 7 mpg better than Automatics in the data set.  
-Residuals analysis shows further exploration is needed and should consider a non linear model, normalised data values and certain outlier data values could be excluded.  
+  
+However, residuals analysis show that further exploration is needed and should consider a non linear model with normalised data values and the exclusion of certain outlier data values.  
 
 ## 2.0    Loading Libraries & Data.  
 ```{r Load}
@@ -59,32 +59,32 @@ Using backward regression model fitting, a series of models were fitted with res
 
 1.    **fit 10. The all variable model.**  
       Weak coefficient significance for all predictor variables i.e. p value > 0.05.  
-      F stat score 7.83. The model is not statistically significant.  
+      F stat score 7.83. This model was not statistically significant.  
       Adjusted R-squared = 0.0.779. The model explained approx 78% of the mpg variable. 
 
-2.    **fit6. The ignore factors model** factor variables cyl, vs, gear and carb removed.
-      Coefficient significance improved for wt and qsec. P value > 0.05 remain for others.  
-      F stat score 27.09. The model is still not statistically significant.  
+2.    **fit6. The ignore factors model** factor variables "cyl", "vs", "gear" and "carb" removed.
+      Coefficient significance improved for "wt" and "qsec". P value > 0.05 remained for others.  
+      F stat score 27.09. This model was also not statistically significant.  
       Adjusted R-squared = 0.8347. The model explained approx. 83% of the mpg variable. 
 
-3.    **fit5. Reduced model** variable drat removed based on coefficient abs.t values < 1.0  
-      Coefficients of variables wt, qsec and am become significant. P value > 0.05 for others.  
-      F stat score 32.96. The model is still not statistically significant.  
-      Adjusted R-squared 0.8375. Slight improvement, explaining approx. 84% of the mpg variable. 
+3.    **fit5. Reduced model** variable "drat" removed based on coefficient abs.t values < 1.0  
+      Coefficients of variables "wt", "qsec: and "am" become significant. P value < 0.05.  
+      F stat score 32.96. This model was still not statistically significant.  
+      Adjusted R-squared 0.8375. Slight improvement, explained approx. 84% of the mpg variable. 
 
-4.    **fit3. Final model** variables disp and hp removed based on coefficient t values < 2.0  
-      Coefficients significant for predictor variables wt, qsec and am. P values < 0.05.  
-      F stat score 52.75. The model is somewhat statistically significant.  
-      Adjusted R-squared 0.8336 ie the model explains approx 84% of the mpg variable.   
+4.    **fit3. Final model** variables "disp" and "hp" removed based on coefficient t values< 2.0  
+      Coefficients significant variables "wt", "qsec" and "am". P values < 0.05.  
+      F stat score 52.75. This model was somewhat statistically significant.  
+      Adjusted R-squared 0.8336 ie the model explained approx 84% of the mpg variable.   
 
 ## 6.0    Model Scatter Plots. (refer A-4 & A-5)  
-The scatter plots for the final model fit3 show that MPG is negatively correlated to weight (wt) and positively correlated to 1/4 mile times (qsec) with manuals better at mpg in general.  
+The scatter plots for the final model fit3 show that "mpg" is negatively correlated to weight ("wt") and positively correlated to 1/4 mile times ("qsec") with manuals better at mpg in general.
 
 ## 7.0    Residuals Analysis. (refer A-6)  
-The Residuals vs Fitted plot shows a pattern suggesting that the linear model is not ideal.  
-The Q-Q plot confirms the assumption of a normally distributed data set.  
-The Scale-Location plot shows a large spread and an angled fit line, so the assumption of equal variance is weak.  
-The Residuals vs Leverage shows that the model is influenced by a few outliers. 
+The Residuals vs Fitted plot showed a pattern suggesting that the linear model may not be ideal.  
+The Q-Q plot confirmed the assumption of a normally distributed data set.  
+The Scale-Location plot showed a large spread with an angled fit line, so the assumption of equal variance was weak.  
+The Residuals vs Leverage showed that the model was influenced by a few outliers. 
 
 \pagebreak
 
@@ -105,8 +105,8 @@ ggplot(mtcars, aes(x=am, y=mpg, fill=am))+ geom_boxplot()+
 ###   A-3. Regression Model Fitting  
 ```{r, regression}
 fit10 <-  lm(mpg ~ ., data=mtcars); summary(fit10)            # all variables
-fit6 <-  update(fit10,. ~ .-cyl-vs-gear-carb); summary(fit6)  # less cyl,vs, gear & carb
-fit5 <-  update(fit6,. ~ .-drat); summary(fit5)               # less gear& drat
+fit6 <-  update(fit10,. ~ .-cyl-vs-gear-carb); summary(fit6)  # less cyl, vs, gear & carb
+fit5 <-  update(fit6,. ~ .-drat); summary(fit5)               # less drat
 fit3 <-  update(fit5,. ~ .-disp-hp); summary(fit3)            # less disp & hp
 ```  
 \pagebreak
