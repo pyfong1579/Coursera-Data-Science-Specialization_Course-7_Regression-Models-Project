@@ -1,0 +1,132 @@
+---
+title: "Motor Trend Report"
+author: "P.Y.Fong"
+date: "12/31/2020"
+output:
+  pdf_document:
+    fig_width: 10
+fontsize: 10pt
+geometry: "left=2cm,right=2cm,top=.5cm,bottom=.5cm"
+---
+```{r setup, include=FALSE}
+library (knitr)
+opts_chunk$set(cache =T,
+               echo = T,
+               message=F,
+               warning=F)
+```
+## 1.0    Executive Summary  
+In this report, the data set `mtcars` extracted from the 1974 *Motor Trend* US magazine, was used to explore the relationship between a set of predictor variables and the response variable, fuel consumption (MPG).  
+The data set comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models). [*Link*](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html)  
+Statistical Inference & Linear Regression methods were used to answer the following two questions:  
+1.    “Is an automatic or manual transmission better for MPG?”  
+2.    "Quantify the MPG difference between automatic and manual transmissions"  
+
+The results of the analysis show that Manuals are significantly better for MPG.  
+However, MPG is negatively correlated to vehicle weight and positively correlated to 1/4 mile times regardless of transmission type.
+The model that explains the relationship between these variables is:  
+    **MPG = 9.6 - 3.9(wt) + 1.2(qsec) + 3 (am: 0 for autos & 1 for manual)**  
+On the average Manuals are approx. 7 mpg better than Automatics in the data set.  
+Residuals analysis shows further exploration is needed and should consider a non linear model, normalised data values and certain outlier data values could be excluded.  
+
+## 2.0    Loading Libraries & Data.  
+```{r Load}
+library(ggplot2); library(GGally); data(mtcars); attach(mtcars)
+```
+## 3.0    Exploratory Data Analysis.
+```{r Explore}
+str(mtcars) # Data set structure
+```
+Some variables were converted from numeric to factors.
+```{r Factor}
+mtcars$cyl <- as.factor(mtcars$cyl); mtcars$vs <- as.factor(mtcars$vs);
+mtcars$am <- as.factor(mtcars$am); mtcars$gear <- as.factor(mtcars$gear);
+mtcars$carb <- as.factor(mtcars$carb)
+```
+### 3.1 Exploratory Observations.  
+1.    (Refer A-1) Paired graph show high correlations between "mpg" with "disp", "hp", "wt" and "qsec". The predictors mentioned were also highly correlated among themselves.
+2.    The paired relationship between "mpg" and "am" warranted a closer look. (Refer A-2) Box plot, Manuals have higher values of MPG in general compared to Automatics.
+
+##  4.0   Analysis with two sample T-test.  
+Null hypothesis: Mean MPG(auto) = mean MPG(manual), assuming normal distribution.  
+```{r t-test}
+t.test(mpg ~ am)
+```  
+The null hypothesis was rejected. P-value < 0.05 (alpha = 5%). i.e. Mean MPG(auto) and mean MPG(manual) are significantly different. Also note that mean consumption (MPG) was about 7.2 mpg better for manuals.
+
+## 5.0    Regression Analysis.  
+Using backward regression model fitting, a series of models were fitted with results (refer A-3) as follows:-  
+
+1.    **fit 10. The all variable model.**  
+      Weak coefficient significance for all predictor variables i.e. p value > 0.05.  
+      F stat score 7.83. The model is not statistically significant.  
+      Adjusted R-squared = 0.0.779. The model explained approx 78% of the mpg variable. 
+
+2.    **fit6. The ignore factors model** factor variables cyl, vs, gear and carb removed.
+      Coefficient significance improved for wt and qsec. P value > 0.05 remain for others.  
+      F stat score 27.09. The model is still not statistically significant.  
+      Adjusted R-squared = 0.8347. The model explained approx. 83% of the mpg variable. 
+
+3.    **fit5. Reduced model** variable drat removed based on coefficient abs.t values < 1.0  
+      Coefficients of variables wt, qsec and am become significant. P value > 0.05 for others.  
+      F stat score 32.96. The model is still not statistically significant.  
+      Adjusted R-squared 0.8375. Slight improvement, explaining approx. 84% of the mpg variable. 
+
+4.    **fit3. Final model** variables disp and hp removed based on coefficient t values < 2.0  
+      Coefficients significant for predictor variables wt, qsec and am. P values < 0.05.  
+      F stat score 52.75. The model is somewhat statistically significant.  
+      Adjusted R-squared 0.8336 ie the model explains approx 84% of the mpg variable.   
+
+## 6.0    Model Scatter Plots. (refer A-4 & A-5)  
+The scatter plots for the final model fit3 show that MPG is negatively correlated to weight (wt) and positively correlated to 1/4 mile times (qsec) with manuals better at mpg in general.  
+
+## 7.0    Residuals Analysis. (refer A-6)  
+The Residuals vs Fitted plot shows a pattern suggesting that the linear model is not ideal.  
+The Q-Q plot confirms the assumption of a normally distributed data set.  
+The Scale-Location plot shows a large spread and an angled fit line, so the assumption of equal variance is weak.  
+The Residuals vs Leverage shows that the model is influenced by a few outliers. 
+
+\pagebreak
+
+##    Appendices
+###   A-1. Paired Graph
+```{r paired, fig.height= 7}
+ggpairs(mtcars, aes(colour=am),axisLabels ="none", lower=list(combo=wrap("facethist", binwidth=10)))
+``` 
+
+###   A-2. Boxplot of MPG vs. Transmission.
+```{r boxplot,fig.height= 4}
+ggplot(mtcars, aes(x=am, y=mpg, fill=am))+ geom_boxplot()+ 
+  theme(axis.title.x= element_blank(),legend.position="none")+
+  scale_x_discrete(labels = c('Manual','Automatic'))
+```  
+\pagebreak
+
+###   A-3. Regression Model Fitting  
+```{r, regression}
+fit10 <-  lm(mpg ~ ., data=mtcars); summary(fit10)            # all variables
+fit6 <-  update(fit10,. ~ .-cyl-vs-gear-carb); summary(fit6)  # less cyl,vs, gear & carb
+fit5 <-  update(fit6,. ~ .-drat); summary(fit5)               # less gear& drat
+fit3 <-  update(fit5,. ~ .-disp-hp); summary(fit3)            # less disp & hp
+```  
+\pagebreak
+
+###   A-4.    Scatter Plot of MPG vs. Weight by Transmission  
+```{r mpg vs wt, fig.height= 5}
+ggplot(mtcars, aes(x=wt, y=mpg, group=am, color=am))+ geom_point()+
+  stat_smooth(method = "lm")+ xlab("Weight")+
+  scale_colour_discrete(labels=c("Automatic", "Manual"))
+```
+
+###   A-5.    Scatter Plot of MPG vs. Quarter Mile Time  
+```{r mpg vs qsec, fig.height= 5}
+ggplot(mtcars, aes(x=qsec, y=mpg, group=am, color=am))+ geom_point()+
+  stat_smooth(method = "lm")+ xlab("Weight")+
+  scale_colour_discrete(labels=c("Automatic", "Manual"))
+```
+\pagebreak
+
+###   A-6.    Residual Plots
+```{r residuals, fig.height=10}
+library (ggfortify); autoplot(fit3)
+```  
